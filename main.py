@@ -1,6 +1,7 @@
 import discord
 import re
 import requests
+import os
 
 client = discord.Client()
 
