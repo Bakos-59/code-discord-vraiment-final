@@ -6,7 +6,7 @@ import discord
 client = discord.Client()
 
 # Remplacez par l'ID numérique de votre salon Discord (où le bot doit envoyer le message)
-CHANNEL_ID = 123456789012345678  
+CHANNEL_ID = 1552274226977968179  
 
 @client.event
 async def on_ready():
