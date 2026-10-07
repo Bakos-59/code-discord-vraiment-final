@@ -2,57 +2,67 @@ import os
 import requests
 import discord
 
-# Configuration du client (self-bot)
 client = discord.Client()
 
-# Remplacez par l'ID numérique de votre salon Discord (où le bot doit envoyer le message)
-CHANNEL_ID = 1552274226977968179  
+# 1. Remplacez par l'ID du salon où le bot doit LIRE / ÉCOUTER le code
+TARGET_CHANNEL_ID = 1552274226977968179  
+
+# 2. Remplacez par l'ID du salon où le bot doit ENVOYER les rapports
+LOG_CHANNEL_ID = 1552274223483977879     
 
 @client.event
 async def on_ready():
-    print(f"Connecté avec succès en tant que : {client.user} (Version 2)")
-    
-    # Récupération des variables d'environnement configurées sur Bot-Hosting
-    discord_token = os.getenv("DISCORD_TOKEN")
-    captcha_sid = os.getenv("CAPTCHA_SID")
-    
-    # Étape de vérification / simulation de l'action sur le site
-    status_message = "🔄 Initialisation de la vérification du code..."
-    
-    try:
-        # Simulation des cookies / données pour la requête vers le site
+    print(f"Connecté en tant que : {client.user}")
+    print(f"Le self-bot écoute activement les messages dans le salon ID : {TARGET_CHANNEL_ID}")
+
+@client.event
+async def on_message(message):
+    # Ignore les messages envoyés par le bot lui-même pour éviter les boucles
+    if message.author == client.user:
+        return
+
+    # C'est ici qu'il lit le code : on vérifie si le message vient du salon cible
+    if message.channel.id == TARGET_CHANNEL_ID:
+        code_saisi = message.content.strip()
+        print(f"Code détecté dans le salon cible : {code_saisi}")
+        
+        # Récupération des paramètres de connexion
+        captcha_sid = os.getenv("CAPTCHA_SID")
         cookies = {
             "sid": captcha_sid,
             "lang": "fr"
         }
         
-        # Exemple de requête de test (Remplacez l'URL par l'endpoint réel si nécessaire)
-        # On utilise timeout=5 pour éviter de bloquer le bot si le site met du temps à répondre
-        response = requests.get("https://captchapay.net/", cookies=cookies, timeout=5)
+        log_channel = client.get_channel(LOG_CHANNEL_ID)
         
-        if response.status_code == 200:
-            status_message = "✅ Le site a bien répondu. Le code a été soumis/vérifié avec succès !"
-        else:
-            status_message = f"⚠️ Le site a répondu avec le code d'erreur HTTP : {response.status_code}"
+        try:
+            # Envoi du code récupéré vers le site
+            payload = {"code": code_saisi}
+            response = requests.post("https://captchapay.fr/api/account/redeem", cookies=cookies, data=payload, timeout=5)
             
-    except requests.exceptions.RequestException as e:
-        status_message = f"❌ Erreur lors de la communication avec le site : {e}"
+            if response.status_code == 200:
+                statut_texte = f"✅ **Succès !** Le code `{code_saisi}` a été validé et entré avec succès."
+            else:
+                statut_texte = f"❌ **Échec !** Le code `{code_saisi}` a été rejeté (Code HTTP : {response.status_code})."
+                
+        except Exception as e:
+            statut_texte = f"⚠️ **Erreur technique** lors de la soumission du code `{code_saisi}` : {e}"
 
-    # Envoi du message dans le salon Discord configuré
-    channel = client.get_channel(CHANNEL_ID)
-    if channel:
-        await channel.send(
-            f"**[Rapport du Self-Bot - Version 2]**\n"
-            f"• Compte : `{client.user}`\n"
-            f"• Statut : {status_message}"
-        )
-        print("Message de rapport envoyé dans le salon avec succès !")
-    else:
-        print("Erreur : Impossible de trouver le salon avec l'ID spécifié.")
+        # Envoi du rapport dans le salon de logs différent
+        if log_channel:
+            await log_channel.send(
+                f"**[Rapport CaptchaPay]**\n"
+                f"• Code détecté dans <#{TARGET_CHANNEL_ID}>\n"
+                f"• Auteur : {message.author.mention}\n"
+                f"• Statut : {statut_texte}"
+            )
+            print("Rapport envoyé dans le salon de logs.")
+        else:
+            print("Erreur : Impossible de trouver le salon de logs (LOG_CHANNEL_ID).")
 
-# Lancement du self-bot en utilisant le token sécurisé
+# Lancement du self-bot
 token = os.getenv("DISCORD_TOKEN")
-if not token:
-    print("Erreur critique : La variable DISCORD_TOKEN est introuvable.")
-else:
+if token:
     client.run(token)
+else:
+    print("Erreur : DISCORD_TOKEN manquant.")
