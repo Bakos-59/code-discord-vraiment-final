@@ -5,7 +5,7 @@ import os
 
 client = discord.Client()
 
-SALON_CIBLE_ID = 1554000268864135198  # Remplacez par votre ID de salon
+SALON_CIBLE_ID = 1552274226977968179  # Remplacez par votre ID de salon
 
 COOKIES_CAPTCHAPAY = {
     "sid": os.getenv("CAPTCHA_SID"),  # Récupère la variable d'environnement
