@@ -8,7 +8,7 @@ client = discord.Client()
 TARGET_CHANNEL_ID = 1552274226977968179  
 
 # 2. Remplacez par l'ID du salon où le bot doit ENVOYER les rapports
-LOG_CHANNEL_ID = 1552274223483977879     
+LOG_CHANNEL_ID = 1552274237585236004     
 
 @client.event
 async def on_ready():
