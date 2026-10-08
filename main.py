@@ -5,8 +5,9 @@ import os
 
 client = discord.Client()
 
-SALON_CIBLE_ID = 1552274226977968179  # Salon où le bot lit le code
-LOG_CHANNEL_ID = 1552274237585236004  # Remplacez par l'ID de votre salon de logs pour les rapports
+SALON_CIBLE_ID = 1554000268864135198  # Salon où le bot lit le code
+LOG_CHANNEL_ID = 1552274237585236004     # Salon de logs pour les rapports
+MON_USER_ID = 1412853514987896872      # Remplacez par votre propre ID Discord (pour recevoir la notif)
 
 COOKIES_CAPTCHAPAY = {
     "sid": os.getenv("CAPTCHA_SID"),
@@ -45,7 +46,6 @@ async def on_message(message):
                 
                 print(f"✅ Code {code} envoyé ! (Statut HTTP : {response.status_code})")
                 
-                # Vous pouvez ajuster cette condition selon ce que le site renvoie en cas de succès
                 if response.status_code == 200:
                     statut_texte = f"✅ **Code mis avec succès** : `{code}`"
                 else:
@@ -55,15 +55,15 @@ async def on_message(message):
                 print(f"❌ Erreur : {e}")
                 statut_texte = f"❌ **Erreur technique** lors de l'envoi du code `{code}` : {e}"
 
-            # Envoi du rapport dans le salon de logs unique
+            # Envoi du rapport dans le salon de logs avec votre mention pour la notification
             if log_channel:
                 try:
                     await log_channel.send(
-                        f"**[Rapport CaptchaPay]**\n"
+                        f"<@{MON_USER_ID}> **[Rapport CaptchaPay]**\n"
                         f"• Statut : {statut_texte}\n"
-                        f"• Auteur du message : {message.author.mention}"
+                        f"• Auteur du message détecté : {message.author.mention}"
                     )
-                    print("Rapport envoyé dans le salon de logs.")
+                    print("Rapport envoyé avec notification dans le salon de logs.")
                 except Exception as log_err:
                     print(f"Erreur lors de l'envoi du rapport dans le salon de logs : {log_err}")
             else:
