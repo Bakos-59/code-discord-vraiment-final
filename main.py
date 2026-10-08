@@ -5,7 +5,7 @@ import discord
 client = discord.Client()
 
 # Configuration des salons (Remplacez par vos vrais IDs numériques)
-TARGET_CHANNEL_ID = 1552274239883714561  # Le salon où vous entrez / postez le code
+TARGET_CHANNEL_ID = 1552274226977968179  # Le salon où vous entrez / postez le code
 LOG_CHANNEL_ID = 1552274237585236004     # Le salon unique où TOUS les rapports sont envoyés
 
 @client.event
